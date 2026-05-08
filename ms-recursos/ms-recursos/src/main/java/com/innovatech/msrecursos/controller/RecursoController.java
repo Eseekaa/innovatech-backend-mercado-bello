@@ -51,6 +51,29 @@ public class RecursoController {
         }
     }
 
+    // PATCH /api/recursos/{id}/proyecto/{idProyecto}
+    // Endpoint especifico para asignar un empleado a un proyecto.
+    @PatchMapping("/{id}/proyecto/{idProyecto}")
+    public ResponseEntity<Recurso> asignarProyecto(@PathVariable Long id,
+                                                   @PathVariable Long idProyecto) {
+        try {
+            return ResponseEntity.ok(recursoService.asignarProyecto(id, idProyecto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // PATCH /api/recursos/{id}/proyecto
+    // Quita la asignacion dejando ID_PROYECTO en null.
+    @PatchMapping("/{id}/proyecto")
+    public ResponseEntity<Recurso> quitarProyecto(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(recursoService.asignarProyecto(id, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // DELETE /api/recursos/{id} - elimina un empleado
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
@@ -63,5 +86,12 @@ public class RecursoController {
     public ResponseEntity<List<Recurso>> obtenerPorDisponibilidad(
             @PathVariable String disponibilidad) {
         return ResponseEntity.ok(recursoService.obtenerPorDisponibilidad(disponibilidad));
+    }
+
+    // GET /api/recursos/proyecto/{idProyecto}
+    // Retorna todos los recursos asignados a un proyecto
+    @GetMapping("/proyecto/{idProyecto}")
+    public ResponseEntity<List<Recurso>> obtenerPorProyecto(@PathVariable Long idProyecto) {
+        return ResponseEntity.ok(recursoService.obtenerPorProyecto(idProyecto));
     }
 }

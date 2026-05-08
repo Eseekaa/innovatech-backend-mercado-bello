@@ -31,6 +31,10 @@ public class Proyecto {
     @Column(name = "responsable")
     private String responsable;
 
+    // Indica si el usuario final ya dio el visto bueno al proyecto terminado.
+    @Column(name = "visto_bueno", nullable = false)
+    private Boolean vistoBueno = false;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNombre() { return nombre; }
@@ -45,4 +49,6 @@ public class Proyecto {
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
     public String getResponsable() { return responsable; }
     public void setResponsable(String responsable) { this.responsable = responsable; }
+    public Boolean getVistoBueno() { return vistoBueno; }
+    public void setVistoBueno(Boolean vistoBueno) { this.vistoBueno = vistoBueno; }
 }

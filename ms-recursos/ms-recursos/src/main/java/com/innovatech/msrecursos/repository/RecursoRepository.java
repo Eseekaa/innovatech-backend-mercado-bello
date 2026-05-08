@@ -11,4 +11,6 @@ public interface RecursoRepository extends JpaRepository<Recurso, Long> {
     List<Recurso> findByDepartamento(String departamento);
     List<Recurso> findByDisponibilidad(String disponibilidad);
     List<Recurso> findByCargo(String cargo);
+    // Buscar recursos por proyecto asignado
+    List<Recurso> findByIdProyecto(Long idProyecto);
 }

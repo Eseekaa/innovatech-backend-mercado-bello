@@ -1,0 +1,67 @@
+services:
+  ms-auth:
+    build:
+      context: ./ms-auth/ms-auth
+    container_name: innovatech-ms-auth
+    ports:
+      - "8083:8083"
+
+  ms-proyectos:
+    build:
+      context: ./ms-proyectos/ms-proyectos
+    container_name: innovatech-ms-proyectos
+    ports:
+      - "8081:8081"
+
+  ms-recursos:
+    build:
+      context: ./ms-recursos/ms-recursos
+    container_name: innovatech-ms-recursos
+    ports:
+      - "8082:8082"
+
+  bff:
+    build:
+      context: ./bff/bff
+    container_name: innovatech-bff
+    depends_on:
+      - ms-proyectos
+      - ms-recursos
+    environment:
+      # Dentro de Docker no se usa localhost entre contenedores.
+      # Se usan los nombres de servicio definidos en este docker-compose.
+      SPRING_APPLICATION_JSON: >
+        {
+          "ms.proyectos.url": "http://ms-proyectos:8081/api/proyectos",
+          "ms.recursos.url": "http://ms-recursos:8082/api/recursos"
+        }
+    ports:
+      - "8084:8084"
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: innovatech-api-gateway
+    depends_on:
+      - ms-auth
+      - ms-proyectos
+      - ms-recursos
+      - bff
+    environment:
+      # Sobrescribe las rutas localhost para que el gateway funcione en red Docker.
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://ms-auth:8083
+      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://ms-proyectos:8081
+      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://ms-recursos:8082
+      SPRING_CLOUD_GATEWAY_ROUTES_3_URI: http://bff:8084
+    ports:
+      - "8085:8085"
+
+  frontend:
+    build:
+      context: ../innovatech-frontend-mercado-bello/innovatech-frontend
+    container_name: innovatech-frontend
+    depends_on:
+      - bff
+      - ms-auth
+    ports:
+      - "3000:80"

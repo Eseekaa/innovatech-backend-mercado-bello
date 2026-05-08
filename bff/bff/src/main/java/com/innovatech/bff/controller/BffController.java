@@ -73,10 +73,33 @@ public class BffController {
         return ResponseEntity.ok(bffService.actualizarRecurso(id, dto));
     }
 
+    // PATCH /api/bff/recursos/{id}/proyecto/{idProyecto}
+    // Asigna un empleado a un proyecto pasando por el BFF.
+    @PatchMapping("/recursos/{id}/proyecto/{idProyecto}")
+    public ResponseEntity<RecursoDTO> asignarProyectoARecurso(@PathVariable Long id,
+                                                              @PathVariable Long idProyecto) {
+        return ResponseEntity.ok(bffService.asignarProyectoARecurso(id, idProyecto));
+    }
+
+    // PATCH /api/bff/recursos/{id}/proyecto
+    // Deja al empleado sin proyecto asignado.
+    @PatchMapping("/recursos/{id}/proyecto")
+    public ResponseEntity<RecursoDTO> quitarProyectoARecurso(@PathVariable Long id) {
+        return ResponseEntity.ok(bffService.asignarProyectoARecurso(id, null));
+    }
+
     // DELETE /api/bff/recursos/{id}
     @DeleteMapping("/recursos/{id}")
     public ResponseEntity<Void> eliminarRecurso(@PathVariable Long id) {
         bffService.eliminarRecurso(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // GET /api/bff/recursos/proyecto/{idProyecto}
+    // Retorna todos los recursos asignados a un proyecto específico
+    // Permite ver qué empleados están trabajando en un proyecto
+    @GetMapping("/recursos/proyecto/{idProyecto}")
+    public ResponseEntity<List<RecursoDTO>> obtenerRecursosPorProyecto(@PathVariable Long idProyecto) {
+        return ResponseEntity.ok(bffService.obtenerRecursosPorProyecto(idProyecto));
     }
 }

@@ -29,6 +29,10 @@ public class ProyectoServiceImpl implements ProyectoService {
 
     @Override
     public Proyecto crear(Proyecto proyecto) {
+        // Si el cliente no envia vistoBueno, el proyecto nace pendiente.
+        if (proyecto.getVistoBueno() == null) {
+            proyecto.setVistoBueno(false);
+        }
         return proyectoRepository.save(proyecto);
     }
 
@@ -42,6 +46,10 @@ public class ProyectoServiceImpl implements ProyectoService {
         existente.setFechaInicio(proyectoActualizado.getFechaInicio());
         existente.setFechaFin(proyectoActualizado.getFechaFin());
         existente.setResponsable(proyectoActualizado.getResponsable());
+        // Mantiene el visto bueno cuando el frontend no envia el campo.
+        if (proyectoActualizado.getVistoBueno() != null) {
+            existente.setVistoBueno(proyectoActualizado.getVistoBueno());
+        }
         return proyectoRepository.save(existente);
     }
 

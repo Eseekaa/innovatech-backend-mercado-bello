@@ -15,8 +15,8 @@ public class JwtService {
 
     // Clave secreta para firmar los tokens - debe ser larga y segura
     private static final String SECRET = "innovatech-secret-key-2024-fullstack3-duocuc-segura";
-    // Tiempo de expiración: 24 horas en milisegundos
-    private static final long EXPIRATION = 86400000;
+    // Tiempo de expiración: 10 minutos en milisegundos (para presentación)
+    private static final long EXPIRATION = 600000;
 
     // Genera la clave de firma a partir del SECRET
     private Key getKey() {

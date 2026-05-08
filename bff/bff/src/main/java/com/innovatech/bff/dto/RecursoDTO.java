@@ -1,6 +1,8 @@
 package com.innovatech.bff.dto;
 
-// DTO para transferir datos de empleados entre BFF y frontend
+import java.util.List;
+
+// DTO para transferir datos de empleados entre BFF y frontend.
 public class RecursoDTO {
     private Long id;
     private String nombre;
@@ -10,6 +12,10 @@ public class RecursoDTO {
     private String departamento;
     private String disponibilidad;
     private String nivelExperiencia;
+    // Compatibilidad: primer proyecto asignado, visible como ID_PROYECTO en H2.
+    private Long idProyecto;
+    // Relacion completa: permite asignar un empleado a varios proyectos.
+    private List<Long> idProyectos;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -27,4 +33,8 @@ public class RecursoDTO {
     public void setDisponibilidad(String disponibilidad) { this.disponibilidad = disponibilidad; }
     public String getNivelExperiencia() { return nivelExperiencia; }
     public void setNivelExperiencia(String nivelExperiencia) { this.nivelExperiencia = nivelExperiencia; }
+    public Long getIdProyecto() { return idProyecto; }
+    public void setIdProyecto(Long idProyecto) { this.idProyecto = idProyecto; }
+    public List<Long> getIdProyectos() { return idProyectos; }
+    public void setIdProyectos(List<Long> idProyectos) { this.idProyectos = idProyectos; }
 }
