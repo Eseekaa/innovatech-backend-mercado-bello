@@ -14,18 +14,20 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String username;
 
-    // Contraseña encriptada con BCrypt
+    // Contraseña encriptada con BCrypt - nunca se guarda en texto plano
     @Column(nullable = false)
     private String password;
 
-    // Rol del usuario: "ADMIN" o "USER"
+    // 3 roles disponibles:
+    // ADMIN - administra el proyecto completo
+    // JEFE_PROYECTO - puede modificar recursos
+    // USUARIO - usuario normal que puede dar visto bueno a proyectos
     @Column(nullable = false)
     private String rol;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    // Getters y Setters manuales porque Lombok no funciona correctamente
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUsername() { return username; }

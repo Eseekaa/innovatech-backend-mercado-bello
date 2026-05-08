@@ -3,6 +3,7 @@ package com.innovatech.bff.service;
 import com.innovatech.bff.dto.DashboardDTO;
 import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -15,15 +16,22 @@ import java.util.List;
 @Service
 public class BffServiceImpl implements BffService {
 
-    // URLs de los microservicios
-    private static final String MS_PROYECTOS = "http://localhost:8081/api/proyectos";
-    private static final String MS_RECURSOS = "http://localhost:8082/api/recursos";
+    // URLs de los microservicios.
+    // En ejecucion normal vienen desde application.properties con localhost.
+    // En Docker se sobrescriben desde docker-compose.yml usando nombres de contenedor.
+    private final String msProyectosUrl;
+    private final String msRecursosUrl;
 
     // RestTemplate es el cliente HTTP de Spring para llamar a otros servicios
     private final RestTemplate restTemplate;
 
-    public BffServiceImpl(RestTemplate restTemplate) {
+    public BffServiceImpl(
+            RestTemplate restTemplate,
+            @Value("${ms.proyectos.url}") String msProyectosUrl,
+            @Value("${ms.recursos.url}") String msRecursosUrl) {
         this.restTemplate = restTemplate;
+        this.msProyectosUrl = msProyectosUrl;
+        this.msRecursosUrl = msRecursosUrl;
     }
 
     // Combina datos de ambos microservicios en un solo dashboard
@@ -56,48 +64,77 @@ public class BffServiceImpl implements BffService {
     @Override
     public List<ProyectoDTO> obtenerProyectos() {
         ResponseEntity<List<ProyectoDTO>> response = restTemplate.exchange(
-                MS_PROYECTOS, HttpMethod.GET, null,
+                msProyectosUrl, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<ProyectoDTO>>() {});
         return response.getBody();
     }
 
     @Override
     public ProyectoDTO crearProyecto(ProyectoDTO proyectoDTO) {
-        return restTemplate.postForObject(MS_PROYECTOS, proyectoDTO, ProyectoDTO.class);
+        // Todo proyecto nuevo parte pendiente de visto bueno.
+        // Evita enviar null al microservicio de proyectos.
+        if (proyectoDTO.getVistoBueno() == null) {
+            proyectoDTO.setVistoBueno(false);
+        }
+        return restTemplate.postForObject(msProyectosUrl, proyectoDTO, ProyectoDTO.class);
     }
 
     @Override
     public ProyectoDTO actualizarProyecto(Long id, ProyectoDTO proyectoDTO) {
-        restTemplate.put(MS_PROYECTOS + "/" + id, proyectoDTO);
-        return restTemplate.getForObject(MS_PROYECTOS + "/" + id, ProyectoDTO.class);
+        restTemplate.put(msProyectosUrl + "/" + id, proyectoDTO);
+        return restTemplate.getForObject(msProyectosUrl + "/" + id, ProyectoDTO.class);
     }
 
     @Override
     public void eliminarProyecto(Long id) {
-        restTemplate.delete(MS_PROYECTOS + "/" + id);
+        restTemplate.delete(msProyectosUrl + "/" + id);
     }
 
     @Override
     public List<RecursoDTO> obtenerRecursos() {
         ResponseEntity<List<RecursoDTO>> response = restTemplate.exchange(
-                MS_RECURSOS, HttpMethod.GET, null,
+                msRecursosUrl, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<RecursoDTO>>() {});
         return response.getBody();
     }
 
     @Override
     public RecursoDTO crearRecurso(RecursoDTO recursoDTO) {
-        return restTemplate.postForObject(MS_RECURSOS, recursoDTO, RecursoDTO.class);
+        return restTemplate.postForObject(msRecursosUrl, recursoDTO, RecursoDTO.class);
     }
 
     @Override
     public RecursoDTO actualizarRecurso(Long id, RecursoDTO recursoDTO) {
-        restTemplate.put(MS_RECURSOS + "/" + id, recursoDTO);
-        return restTemplate.getForObject(MS_RECURSOS + "/" + id, RecursoDTO.class);
+        restTemplate.put(msRecursosUrl + "/" + id, recursoDTO);
+        return restTemplate.getForObject(msRecursosUrl + "/" + id, RecursoDTO.class);
     }
 
     @Override
     public void eliminarRecurso(Long id) {
-        restTemplate.delete(MS_RECURSOS + "/" + id);
+        restTemplate.delete(msRecursosUrl + "/" + id);
+    }
+
+    // Obtiene todos los recursos asignados a un proyecto específico
+    // Llama al ms-recursos filtrando por idProyecto
+    @Override
+    public RecursoDTO asignarProyectoARecurso(Long id, Long idProyecto) {
+        // RestTemplate por defecto puede fallar con PATCH en Windows/JDK.
+        // Por eso el BFF obtiene el empleado, cambia solo idProyecto y lo guarda con PUT.
+        RecursoDTO recurso = restTemplate.getForObject(msRecursosUrl + "/" + id, RecursoDTO.class);
+        if (recurso == null) {
+            throw new RuntimeException("Recurso no encontrado: " + id);
+        }
+        recurso.setIdProyecto(idProyecto);
+        restTemplate.put(msRecursosUrl + "/" + id, recurso);
+        return restTemplate.getForObject(msRecursosUrl + "/" + id, RecursoDTO.class);
+    }
+
+    @Override
+    public List<RecursoDTO> obtenerRecursosPorProyecto(Long idProyecto) {
+        ResponseEntity<List<RecursoDTO>> response = restTemplate.exchange(
+                msRecursosUrl + "/proyecto/" + idProyecto,
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<RecursoDTO>>() {});
+        return response.getBody();
     }
 }

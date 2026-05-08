@@ -12,4 +12,8 @@ public interface RecursoService {
     Recurso actualizar(Long id, Recurso recurso);
     void eliminar(Long id);
     List<Recurso> obtenerPorDisponibilidad(String disponibilidad);
+    // Obtener recursos por proyecto
+    List<Recurso> obtenerPorProyecto(Long idProyecto);
+    // Asigna o quita un proyecto sin modificar los demas datos del empleado
+    Recurso asignarProyecto(Long id, Long idProyecto);
 }

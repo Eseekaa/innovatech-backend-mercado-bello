@@ -17,4 +17,8 @@ public interface BffService {
     RecursoDTO crearRecurso(RecursoDTO recursoDTO);
     RecursoDTO actualizarRecurso(Long id, RecursoDTO recursoDTO);
     void eliminarRecurso(Long id);
+    // Obtiene recursos filtrados por proyecto
+    List<RecursoDTO> obtenerRecursosPorProyecto(Long idProyecto);
+    // Asigna un empleado a un proyecto desde el BFF
+    RecursoDTO asignarProyectoARecurso(Long id, Long idProyecto);
 }

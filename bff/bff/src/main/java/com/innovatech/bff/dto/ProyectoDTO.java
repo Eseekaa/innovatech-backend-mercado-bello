@@ -12,6 +12,8 @@ public class ProyectoDTO {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private String responsable;
+    // Estado de aprobacion del usuario normal sobre el proyecto terminado.
+    private Boolean vistoBueno;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -27,4 +29,6 @@ public class ProyectoDTO {
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
     public String getResponsable() { return responsable; }
     public void setResponsable(String responsable) { this.responsable = responsable; }
+    public Boolean getVistoBueno() { return vistoBueno; }
+    public void setVistoBueno(Boolean vistoBueno) { this.vistoBueno = vistoBueno; }
 }
