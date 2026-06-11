@@ -4,6 +4,7 @@ import com.innovatech.bff.dto.DashboardDTO;
 import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
 import com.innovatech.bff.dto.TareaDTO;
+import com.innovatech.bff.dto.TareaKpiDTO;
 import com.innovatech.bff.dto.ActualizarEstadoTareaDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,10 +45,14 @@ public class BffServiceImpl implements BffService {
     public DashboardDTO obtenerDashboard() {
         List<ProyectoDTO> proyectos = obtenerProyectos();
         List<RecursoDTO> recursos = obtenerRecursos();
+        List<TareaDTO> tareas = obtenerTareas();
+        TareaKpiDTO tareaKpis = obtenerKpisTareas();
 
         DashboardDTO dashboard = new DashboardDTO();
         dashboard.setProyectos(proyectos);
         dashboard.setRecursos(recursos);
+        dashboard.setTareas(tareas);
+        dashboard.setTareaKpis(tareaKpis);
         dashboard.setTotalProyectos(proyectos.size());
         dashboard.setTotalRecursos(recursos.size());
 
@@ -149,6 +154,13 @@ public class BffServiceImpl implements BffService {
                 msTareasUrl, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<TareaDTO>>() {});
         return response.getBody();
+    }
+
+    @Override
+    public TareaKpiDTO obtenerKpisTareas() {
+        // El BFF no calcula los KPIs: se los pide a ms-tareas para respetar
+        // la responsabilidad de cada microservicio.
+        return restTemplate.getForObject(msTareasUrl + "/kpis", TareaKpiDTO.class);
     }
 
     @Override

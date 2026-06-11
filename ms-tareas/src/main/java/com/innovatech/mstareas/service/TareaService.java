@@ -1,6 +1,7 @@
 package com.innovatech.mstareas.service;
 
 import com.innovatech.mstareas.dto.ActualizarEstadoTareaRequest;
+import com.innovatech.mstareas.dto.TareaKpiDTO;
 import com.innovatech.mstareas.model.Tarea;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ public interface TareaService {
     Optional<Tarea> obtenerPorId(Long id);
     List<Tarea> obtenerPorProyecto(Long proyectoId);
     List<Tarea> obtenerPorResponsable(Long responsableId);
+    TareaKpiDTO obtenerKpis();
     Tarea crear(Tarea tarea);
     Tarea actualizar(Long id, Tarea tareaActualizada);
     Tarea actualizarEstado(Long id, ActualizarEstadoTareaRequest request);

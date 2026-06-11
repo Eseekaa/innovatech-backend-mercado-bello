@@ -1,10 +1,12 @@
 package com.innovatech.mstareas.service;
 
 import com.innovatech.mstareas.dto.ActualizarEstadoTareaRequest;
+import com.innovatech.mstareas.dto.TareaKpiDTO;
 import com.innovatech.mstareas.model.EstadoTarea;
 import com.innovatech.mstareas.model.PrioridadTarea;
 import com.innovatech.mstareas.model.Tarea;
 import com.innovatech.mstareas.repository.TareaRepository;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,27 @@ public class TareaServiceImpl implements TareaService {
     @Override
     public List<Tarea> obtenerPorResponsable(Long responsableId) {
         return tareaRepository.findByResponsableId(responsableId);
+    }
+
+    @Override
+    public TareaKpiDTO obtenerKpis() {
+        // Los KPIs se calculan en ms-tareas porque este servicio es el dueno
+        // de los datos de tareas. El BFF solo consume este resumen.
+        List<Tarea> tareas = tareaRepository.findAll();
+        int total = tareas.size();
+
+        TareaKpiDTO kpis = new TareaKpiDTO();
+        kpis.setTotalTareas(total);
+        kpis.setTareasPendientes(contarPorEstado(tareas, EstadoTarea.PENDIENTE));
+        kpis.setTareasEnProgreso(contarPorEstado(tareas, EstadoTarea.EN_PROGRESO));
+        kpis.setTareasCompletadas(contarPorEstado(tareas, EstadoTarea.COMPLETADA));
+        kpis.setTareasBloqueadas(contarPorEstado(tareas, EstadoTarea.BLOQUEADA));
+        kpis.setTareasVencidas(contarTareasVencidas(tareas));
+        kpis.setTareasSinResponsable(contarTareasSinResponsable(tareas));
+        kpis.setAvancePromedio(redondear(calcularAvancePromedio(tareas)));
+        kpis.setPorcentajeCompletadas(redondear(calcularPorcentajeCompletadas(kpis.getTareasCompletadas(), total)));
+
+        return kpis;
     }
 
     @Override
@@ -120,5 +143,44 @@ public class TareaServiceImpl implements TareaService {
         if (tarea.getEstado() == EstadoTarea.COMPLETADA) {
             tarea.setAvance(100);
         }
+    }
+
+    private int contarPorEstado(List<Tarea> tareas, EstadoTarea estado) {
+        return (int) tareas.stream()
+                .filter(tarea -> tarea.getEstado() == estado)
+                .count();
+    }
+
+    private int contarTareasVencidas(List<Tarea> tareas) {
+        LocalDate hoy = LocalDate.now();
+        return (int) tareas.stream()
+                .filter(tarea -> tarea.getFechaFin() != null)
+                .filter(tarea -> tarea.getFechaFin().isBefore(hoy))
+                .filter(tarea -> tarea.getEstado() != EstadoTarea.COMPLETADA)
+                .count();
+    }
+
+    private int contarTareasSinResponsable(List<Tarea> tareas) {
+        return (int) tareas.stream()
+                .filter(tarea -> tarea.getResponsableIds() == null || tarea.getResponsableIds().isEmpty())
+                .count();
+    }
+
+    private double calcularAvancePromedio(List<Tarea> tareas) {
+        return tareas.stream()
+                .mapToInt(tarea -> tarea.getAvance() != null ? tarea.getAvance() : 0)
+                .average()
+                .orElse(0);
+    }
+
+    private double calcularPorcentajeCompletadas(int completadas, int total) {
+        if (total == 0) {
+            return 0;
+        }
+        return (completadas * 100.0) / total;
+    }
+
+    private double redondear(double valor) {
+        return Math.round(valor * 100.0) / 100.0;
     }
 }

@@ -4,6 +4,7 @@ import com.innovatech.bff.dto.DashboardDTO;
 import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
 import com.innovatech.bff.dto.TareaDTO;
+import com.innovatech.bff.dto.TareaKpiDTO;
 import com.innovatech.bff.dto.ActualizarEstadoTareaDTO;
 import com.innovatech.bff.service.BffService;
 import org.springframework.http.HttpStatus;
@@ -109,6 +110,12 @@ public class BffController {
     @GetMapping("/tareas")
     public ResponseEntity<List<TareaDTO>> obtenerTareas() {
         return ResponseEntity.ok(bffService.obtenerTareas());
+    }
+
+    // GET /api/bff/tareas/kpis - resumen de tareas para dashboard/reportes.
+    @GetMapping("/tareas/kpis")
+    public ResponseEntity<TareaKpiDTO> obtenerKpisTareas() {
+        return ResponseEntity.ok(bffService.obtenerKpisTareas());
     }
 
     // GET /api/bff/tareas/{id} - obtiene una tarea especifica.
