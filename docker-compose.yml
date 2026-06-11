@@ -20,6 +20,13 @@ services:
     ports:
       - "8082:8082"
 
+  ms-tareas:
+    build:
+      context: ./ms-tareas
+    container_name: innovatech-ms-tareas
+    ports:
+      - "8086:8086"
+
   bff:
     build:
       context: ./bff/bff
@@ -27,13 +34,15 @@ services:
     depends_on:
       - ms-proyectos
       - ms-recursos
+      - ms-tareas
     environment:
       # Dentro de Docker no se usa localhost entre contenedores.
       # Se usan los nombres de servicio definidos en este docker-compose.
       SPRING_APPLICATION_JSON: >
         {
           "ms.proyectos.url": "http://ms-proyectos:8081/api/proyectos",
-          "ms.recursos.url": "http://ms-recursos:8082/api/recursos"
+          "ms.recursos.url": "http://ms-recursos:8082/api/recursos",
+          "ms.tareas.url": "http://ms-tareas:8086/api/tareas"
         }
     ports:
       - "8084:8084"
@@ -46,6 +55,7 @@ services:
       - ms-auth
       - ms-proyectos
       - ms-recursos
+      - ms-tareas
       - bff
     environment:
       # Sobrescribe las rutas localhost para que el gateway funcione en red Docker.
@@ -53,6 +63,7 @@ services:
       SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://ms-proyectos:8081
       SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://ms-recursos:8082
       SPRING_CLOUD_GATEWAY_ROUTES_3_URI: http://bff:8084
+      SPRING_CLOUD_GATEWAY_ROUTES_4_URI: http://ms-tareas:8086
     ports:
       - "8085:8085"
 
