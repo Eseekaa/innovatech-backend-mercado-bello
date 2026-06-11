@@ -5,6 +5,8 @@ import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
 import com.innovatech.bff.dto.TareaDTO;
 import com.innovatech.bff.dto.TareaKpiDTO;
+import com.innovatech.bff.dto.TareaKpiPorProyectoDTO;
+import com.innovatech.bff.dto.TareaKpiPorResponsableDTO;
 import com.innovatech.bff.dto.ActualizarEstadoTareaDTO;
 import java.util.List;
 
@@ -27,6 +29,8 @@ public interface BffService {
     // Operaciones de tareas expuestas por el BFF hacia el frontend
     List<TareaDTO> obtenerTareas();
     TareaKpiDTO obtenerKpisTareas();
+    List<TareaKpiPorProyectoDTO> obtenerKpisTareasPorProyecto();
+    List<TareaKpiPorResponsableDTO> obtenerKpisTareasPorResponsable();
     TareaDTO obtenerTareaPorId(Long id);
     List<TareaDTO> obtenerTareasPorProyecto(Long proyectoId);
     List<TareaDTO> obtenerTareasPorResponsable(Long responsableId);

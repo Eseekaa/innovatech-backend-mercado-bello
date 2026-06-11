@@ -2,14 +2,20 @@ package com.innovatech.mstareas.service;
 
 import com.innovatech.mstareas.dto.ActualizarEstadoTareaRequest;
 import com.innovatech.mstareas.dto.TareaKpiDTO;
+import com.innovatech.mstareas.dto.TareaKpiPorProyectoDTO;
+import com.innovatech.mstareas.dto.TareaKpiPorResponsableDTO;
 import com.innovatech.mstareas.model.EstadoTarea;
 import com.innovatech.mstareas.model.PrioridadTarea;
 import com.innovatech.mstareas.model.Tarea;
 import com.innovatech.mstareas.repository.TareaRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 // Implementacion real de la logica de negocio del microservicio de tareas.
@@ -46,7 +52,44 @@ public class TareaServiceImpl implements TareaService {
     public TareaKpiDTO obtenerKpis() {
         // Los KPIs se calculan en ms-tareas porque este servicio es el dueno
         // de los datos de tareas. El BFF solo consume este resumen.
-        List<Tarea> tareas = tareaRepository.findAll();
+        return construirKpi(tareaRepository.findAll());
+    }
+
+    @Override
+    public List<TareaKpiPorProyectoDTO> obtenerKpisPorProyecto() {
+        // Agrupa todas las tareas por proyectoId para entregar un reporte
+        // ejecutivo por proyecto sin que el frontend tenga que calcularlo.
+        return tareaRepository.findAll().stream()
+                .filter(tarea -> tarea.getProyectoId() != null)
+                .collect(Collectors.groupingBy(Tarea::getProyectoId))
+                .entrySet().stream()
+                .map(entry -> convertirAReporteProyecto(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(TareaKpiPorProyectoDTO::getProyectoId))
+                .toList();
+    }
+
+    @Override
+    public List<TareaKpiPorResponsableDTO> obtenerKpisPorResponsable() {
+        // Una tarea puede tener varios responsables. Por eso armamos el mapa
+        // manualmente: la misma tarea cuenta para cada responsable asignado.
+        Map<Long, List<Tarea>> tareasPorResponsable = new TreeMap<>();
+        for (Tarea tarea : tareaRepository.findAll()) {
+            if (tarea.getResponsableIds() == null || tarea.getResponsableIds().isEmpty()) {
+                continue;
+            }
+            for (Long responsableId : tarea.getResponsableIds()) {
+                tareasPorResponsable
+                        .computeIfAbsent(responsableId, id -> new ArrayList<>())
+                        .add(tarea);
+            }
+        }
+
+        return tareasPorResponsable.entrySet().stream()
+                .map(entry -> convertirAReporteResponsable(entry.getKey(), entry.getValue()))
+                .toList();
+    }
+
+    private TareaKpiDTO construirKpi(List<Tarea> tareas) {
         int total = tareas.size();
 
         TareaKpiDTO kpis = new TareaKpiDTO();
@@ -61,6 +104,37 @@ public class TareaServiceImpl implements TareaService {
         kpis.setPorcentajeCompletadas(redondear(calcularPorcentajeCompletadas(kpis.getTareasCompletadas(), total)));
 
         return kpis;
+    }
+
+    private TareaKpiPorProyectoDTO convertirAReporteProyecto(Long proyectoId, List<Tarea> tareas) {
+        TareaKpiDTO base = construirKpi(tareas);
+        TareaKpiPorProyectoDTO reporte = new TareaKpiPorProyectoDTO();
+        reporte.setProyectoId(proyectoId);
+        reporte.setTotalTareas(base.getTotalTareas());
+        reporte.setTareasPendientes(base.getTareasPendientes());
+        reporte.setTareasEnProgreso(base.getTareasEnProgreso());
+        reporte.setTareasCompletadas(base.getTareasCompletadas());
+        reporte.setTareasBloqueadas(base.getTareasBloqueadas());
+        reporte.setTareasVencidas(base.getTareasVencidas());
+        reporte.setTareasSinResponsable(base.getTareasSinResponsable());
+        reporte.setAvancePromedio(base.getAvancePromedio());
+        reporte.setPorcentajeCompletadas(base.getPorcentajeCompletadas());
+        return reporte;
+    }
+
+    private TareaKpiPorResponsableDTO convertirAReporteResponsable(Long responsableId, List<Tarea> tareas) {
+        TareaKpiDTO base = construirKpi(tareas);
+        TareaKpiPorResponsableDTO reporte = new TareaKpiPorResponsableDTO();
+        reporte.setResponsableId(responsableId);
+        reporte.setTotalTareas(base.getTotalTareas());
+        reporte.setTareasPendientes(base.getTareasPendientes());
+        reporte.setTareasEnProgreso(base.getTareasEnProgreso());
+        reporte.setTareasCompletadas(base.getTareasCompletadas());
+        reporte.setTareasBloqueadas(base.getTareasBloqueadas());
+        reporte.setTareasVencidas(base.getTareasVencidas());
+        reporte.setAvancePromedio(base.getAvancePromedio());
+        reporte.setPorcentajeCompletadas(base.getPorcentajeCompletadas());
+        return reporte;
     }
 
     @Override

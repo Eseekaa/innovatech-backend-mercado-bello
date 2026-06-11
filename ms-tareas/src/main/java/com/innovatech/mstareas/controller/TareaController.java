@@ -2,6 +2,8 @@ package com.innovatech.mstareas.controller;
 
 import com.innovatech.mstareas.dto.ActualizarEstadoTareaRequest;
 import com.innovatech.mstareas.dto.TareaKpiDTO;
+import com.innovatech.mstareas.dto.TareaKpiPorProyectoDTO;
+import com.innovatech.mstareas.dto.TareaKpiPorResponsableDTO;
 import com.innovatech.mstareas.model.Tarea;
 import com.innovatech.mstareas.service.TareaService;
 import jakarta.validation.Valid;
@@ -42,6 +44,18 @@ public class TareaController {
     @GetMapping("/kpis")
     public ResponseEntity<TareaKpiDTO> obtenerKpis() {
         return ResponseEntity.ok(tareaService.obtenerKpis());
+    }
+
+    // GET /api/tareas/kpis/proyectos - reporte KPI agrupado por proyecto.
+    @GetMapping("/kpis/proyectos")
+    public ResponseEntity<List<TareaKpiPorProyectoDTO>> obtenerKpisPorProyecto() {
+        return ResponseEntity.ok(tareaService.obtenerKpisPorProyecto());
+    }
+
+    // GET /api/tareas/kpis/responsables - reporte KPI agrupado por empleado.
+    @GetMapping("/kpis/responsables")
+    public ResponseEntity<List<TareaKpiPorResponsableDTO>> obtenerKpisPorResponsable() {
+        return ResponseEntity.ok(tareaService.obtenerKpisPorResponsable());
     }
 
     // GET /api/tareas/{id} - obtiene una tarea especifica.

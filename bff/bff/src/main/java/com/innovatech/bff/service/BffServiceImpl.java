@@ -5,6 +5,8 @@ import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
 import com.innovatech.bff.dto.TareaDTO;
 import com.innovatech.bff.dto.TareaKpiDTO;
+import com.innovatech.bff.dto.TareaKpiPorProyectoDTO;
+import com.innovatech.bff.dto.TareaKpiPorResponsableDTO;
 import com.innovatech.bff.dto.ActualizarEstadoTareaDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -161,6 +163,24 @@ public class BffServiceImpl implements BffService {
         // El BFF no calcula los KPIs: se los pide a ms-tareas para respetar
         // la responsabilidad de cada microservicio.
         return restTemplate.getForObject(msTareasUrl + "/kpis", TareaKpiDTO.class);
+    }
+
+    @Override
+    public List<TareaKpiPorProyectoDTO> obtenerKpisTareasPorProyecto() {
+        ResponseEntity<List<TareaKpiPorProyectoDTO>> response = restTemplate.exchange(
+                msTareasUrl + "/kpis/proyectos",
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<TareaKpiPorProyectoDTO>>() {});
+        return response.getBody();
+    }
+
+    @Override
+    public List<TareaKpiPorResponsableDTO> obtenerKpisTareasPorResponsable() {
+        ResponseEntity<List<TareaKpiPorResponsableDTO>> response = restTemplate.exchange(
+                msTareasUrl + "/kpis/responsables",
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<TareaKpiPorResponsableDTO>>() {});
+        return response.getBody();
     }
 
     @Override
