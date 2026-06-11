@@ -58,12 +58,48 @@ services:
       - ms-tareas
       - bff
     environment:
-      # Sobrescribe las rutas localhost para que el gateway funcione en red Docker.
-      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://ms-auth:8083
-      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://ms-proyectos:8081
-      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://ms-recursos:8082
-      SPRING_CLOUD_GATEWAY_ROUTES_3_URI: http://bff:8084
-      SPRING_CLOUD_GATEWAY_ROUTES_4_URI: http://ms-tareas:8086
+      # Dentro de Docker se usa una configuracion completa de rutas.
+      # Esto evita que las variables de entorno reemplacen solo la URI y borren los predicados Path.
+      SPRING_APPLICATION_JSON: >
+        {
+          "spring.cloud.gateway.server.webmvc.routes": [
+            {
+              "id": "ms-auth",
+              "uri": "http://ms-auth:8083",
+              "predicates": [
+                { "name": "Path", "args": { "_genkey_0": "/api/auth/**" } }
+              ]
+            },
+            {
+              "id": "ms-proyectos",
+              "uri": "http://ms-proyectos:8081",
+              "predicates": [
+                { "name": "Path", "args": { "_genkey_0": "/api/proyectos/**" } }
+              ]
+            },
+            {
+              "id": "ms-recursos",
+              "uri": "http://ms-recursos:8082",
+              "predicates": [
+                { "name": "Path", "args": { "_genkey_0": "/api/recursos/**" } }
+              ]
+            },
+            {
+              "id": "bff",
+              "uri": "http://bff:8084",
+              "predicates": [
+                { "name": "Path", "args": { "_genkey_0": "/api/bff/**" } }
+              ]
+            },
+            {
+              "id": "ms-tareas",
+              "uri": "http://ms-tareas:8086",
+              "predicates": [
+                { "name": "Path", "args": { "_genkey_0": "/api/tareas/**" } }
+              ]
+            }
+          ]
+        }
     ports:
       - "8085:8085"
 
