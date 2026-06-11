@@ -3,6 +3,8 @@ package com.innovatech.bff.service;
 import com.innovatech.bff.dto.DashboardDTO;
 import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
+import com.innovatech.bff.dto.TareaDTO;
+import com.innovatech.bff.dto.ActualizarEstadoTareaDTO;
 import java.util.List;
 
 // Interfaz que define el contrato del BFF
@@ -21,4 +23,13 @@ public interface BffService {
     List<RecursoDTO> obtenerRecursosPorProyecto(Long idProyecto);
     // Asigna un empleado a un proyecto desde el BFF
     RecursoDTO asignarProyectoARecurso(Long id, Long idProyecto);
+    // Operaciones de tareas expuestas por el BFF hacia el frontend
+    List<TareaDTO> obtenerTareas();
+    TareaDTO obtenerTareaPorId(Long id);
+    List<TareaDTO> obtenerTareasPorProyecto(Long proyectoId);
+    List<TareaDTO> obtenerTareasPorResponsable(Long responsableId);
+    TareaDTO crearTarea(TareaDTO tareaDTO);
+    TareaDTO actualizarTarea(Long id, TareaDTO tareaDTO);
+    TareaDTO actualizarEstadoTarea(Long id, ActualizarEstadoTareaDTO dto);
+    void eliminarTarea(Long id);
 }

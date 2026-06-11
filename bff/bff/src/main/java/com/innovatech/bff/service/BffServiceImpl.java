@@ -3,6 +3,8 @@ package com.innovatech.bff.service;
 import com.innovatech.bff.dto.DashboardDTO;
 import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
+import com.innovatech.bff.dto.TareaDTO;
+import com.innovatech.bff.dto.ActualizarEstadoTareaDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,6 +23,7 @@ public class BffServiceImpl implements BffService {
     // En Docker se sobrescriben desde docker-compose.yml usando nombres de contenedor.
     private final String msProyectosUrl;
     private final String msRecursosUrl;
+    private final String msTareasUrl;
 
     // RestTemplate es el cliente HTTP de Spring para llamar a otros servicios
     private final RestTemplate restTemplate;
@@ -28,10 +31,12 @@ public class BffServiceImpl implements BffService {
     public BffServiceImpl(
             RestTemplate restTemplate,
             @Value("${ms.proyectos.url}") String msProyectosUrl,
-            @Value("${ms.recursos.url}") String msRecursosUrl) {
+            @Value("${ms.recursos.url}") String msRecursosUrl,
+            @Value("${ms.tareas.url}") String msTareasUrl) {
         this.restTemplate = restTemplate;
         this.msProyectosUrl = msProyectosUrl;
         this.msRecursosUrl = msRecursosUrl;
+        this.msTareasUrl = msTareasUrl;
     }
 
     // Combina datos de ambos microservicios en un solo dashboard
@@ -136,5 +141,76 @@ public class BffServiceImpl implements BffService {
                 HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<RecursoDTO>>() {});
         return response.getBody();
+    }
+
+    @Override
+    public List<TareaDTO> obtenerTareas() {
+        ResponseEntity<List<TareaDTO>> response = restTemplate.exchange(
+                msTareasUrl, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<TareaDTO>>() {});
+        return response.getBody();
+    }
+
+    @Override
+    public TareaDTO obtenerTareaPorId(Long id) {
+        return restTemplate.getForObject(msTareasUrl + "/" + id, TareaDTO.class);
+    }
+
+    @Override
+    public List<TareaDTO> obtenerTareasPorProyecto(Long proyectoId) {
+        ResponseEntity<List<TareaDTO>> response = restTemplate.exchange(
+                msTareasUrl + "/proyecto/" + proyectoId,
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<TareaDTO>>() {});
+        return response.getBody();
+    }
+
+    @Override
+    public List<TareaDTO> obtenerTareasPorResponsable(Long responsableId) {
+        ResponseEntity<List<TareaDTO>> response = restTemplate.exchange(
+                msTareasUrl + "/responsable/" + responsableId,
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<TareaDTO>>() {});
+        return response.getBody();
+    }
+
+    @Override
+    public TareaDTO crearTarea(TareaDTO tareaDTO) {
+        // Valores por defecto para que el frontend pueda crear tareas simples.
+        if (tareaDTO.getEstado() == null) {
+            tareaDTO.setEstado("PENDIENTE");
+        }
+        if (tareaDTO.getAvance() == null) {
+            tareaDTO.setAvance(0);
+        }
+        if (tareaDTO.getPrioridad() == null) {
+            tareaDTO.setPrioridad("MEDIA");
+        }
+        return restTemplate.postForObject(msTareasUrl, tareaDTO, TareaDTO.class);
+    }
+
+    @Override
+    public TareaDTO actualizarTarea(Long id, TareaDTO tareaDTO) {
+        restTemplate.put(msTareasUrl + "/" + id, tareaDTO);
+        return restTemplate.getForObject(msTareasUrl + "/" + id, TareaDTO.class);
+    }
+
+    @Override
+    public TareaDTO actualizarEstadoTarea(Long id, ActualizarEstadoTareaDTO dto) {
+        // El frontend usa PATCH contra el BFF, pero internamente usamos GET + PUT.
+        // Esto evita problemas del RestTemplate con PATCH en algunos entornos Windows/JDK.
+        TareaDTO tarea = restTemplate.getForObject(msTareasUrl + "/" + id, TareaDTO.class);
+        if (tarea == null) {
+            throw new RuntimeException("Tarea no encontrada: " + id);
+        }
+        tarea.setEstado(dto.getEstado());
+        tarea.setAvance(dto.getAvance());
+        restTemplate.put(msTareasUrl + "/" + id, tarea);
+        return restTemplate.getForObject(msTareasUrl + "/" + id, TareaDTO.class);
+    }
+
+    @Override
+    public void eliminarTarea(Long id) {
+        restTemplate.delete(msTareasUrl + "/" + id);
     }
 }

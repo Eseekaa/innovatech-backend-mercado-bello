@@ -3,6 +3,8 @@ package com.innovatech.bff.controller;
 import com.innovatech.bff.dto.DashboardDTO;
 import com.innovatech.bff.dto.ProyectoDTO;
 import com.innovatech.bff.dto.RecursoDTO;
+import com.innovatech.bff.dto.TareaDTO;
+import com.innovatech.bff.dto.ActualizarEstadoTareaDTO;
 import com.innovatech.bff.service.BffService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,5 +103,55 @@ public class BffController {
     @GetMapping("/recursos/proyecto/{idProyecto}")
     public ResponseEntity<List<RecursoDTO>> obtenerRecursosPorProyecto(@PathVariable Long idProyecto) {
         return ResponseEntity.ok(bffService.obtenerRecursosPorProyecto(idProyecto));
+    }
+
+    // GET /api/bff/tareas - lista todas las tareas desde ms-tareas.
+    @GetMapping("/tareas")
+    public ResponseEntity<List<TareaDTO>> obtenerTareas() {
+        return ResponseEntity.ok(bffService.obtenerTareas());
+    }
+
+    // GET /api/bff/tareas/{id} - obtiene una tarea especifica.
+    @GetMapping("/tareas/{id}")
+    public ResponseEntity<TareaDTO> obtenerTareaPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(bffService.obtenerTareaPorId(id));
+    }
+
+    // GET /api/bff/tareas/proyecto/{proyectoId} - tareas de un proyecto.
+    @GetMapping("/tareas/proyecto/{proyectoId}")
+    public ResponseEntity<List<TareaDTO>> obtenerTareasPorProyecto(@PathVariable Long proyectoId) {
+        return ResponseEntity.ok(bffService.obtenerTareasPorProyecto(proyectoId));
+    }
+
+    // GET /api/bff/tareas/responsable/{responsableId} - tareas asignadas a un empleado.
+    @GetMapping("/tareas/responsable/{responsableId}")
+    public ResponseEntity<List<TareaDTO>> obtenerTareasPorResponsable(@PathVariable Long responsableId) {
+        return ResponseEntity.ok(bffService.obtenerTareasPorResponsable(responsableId));
+    }
+
+    // POST /api/bff/tareas - crea una tarea usando el BFF.
+    @PostMapping("/tareas")
+    public ResponseEntity<TareaDTO> crearTarea(@RequestBody TareaDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(bffService.crearTarea(dto));
+    }
+
+    // PUT /api/bff/tareas/{id} - edita una tarea completa.
+    @PutMapping("/tareas/{id}")
+    public ResponseEntity<TareaDTO> actualizarTarea(@PathVariable Long id, @RequestBody TareaDTO dto) {
+        return ResponseEntity.ok(bffService.actualizarTarea(id, dto));
+    }
+
+    // PATCH /api/bff/tareas/{id}/estado - cambia solo estado y avance.
+    @PatchMapping("/tareas/{id}/estado")
+    public ResponseEntity<TareaDTO> actualizarEstadoTarea(@PathVariable Long id,
+                                                          @RequestBody ActualizarEstadoTareaDTO dto) {
+        return ResponseEntity.ok(bffService.actualizarEstadoTarea(id, dto));
+    }
+
+    // DELETE /api/bff/tareas/{id} - elimina una tarea.
+    @DeleteMapping("/tareas/{id}")
+    public ResponseEntity<Void> eliminarTarea(@PathVariable Long id) {
+        bffService.eliminarTarea(id);
+        return ResponseEntity.noContent().build();
     }
 }
