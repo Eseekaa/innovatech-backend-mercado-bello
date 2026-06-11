@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.innovatech.mstareas.dto.ActualizarEstadoTareaRequest;
 import com.innovatech.mstareas.dto.TareaKpiDTO;
+import com.innovatech.mstareas.dto.TareaKpiPorProyectoDTO;
+import com.innovatech.mstareas.dto.TareaKpiPorResponsableDTO;
 import com.innovatech.mstareas.model.EstadoTarea;
 import com.innovatech.mstareas.model.Tarea;
 import com.innovatech.mstareas.repository.TareaRepository;
@@ -88,6 +90,50 @@ class TareaServiceImplTest {
         assertThat(actualizada.getAvance()).isEqualTo(99);
         verify(tareaRepository).findById(1L);
         verify(tareaRepository).save(tareaExistente);
+    }
+
+    @Test
+    void obtenerKpisPorProyectoAgrupaTareasPorProyecto() {
+        Tarea tareaProyecto10 = tarea(EstadoTarea.EN_PROGRESO, 50, LocalDate.now().plusDays(1), List.of(1L));
+        tareaProyecto10.setProyectoId(10L);
+        Tarea tareaCompletadaProyecto10 = tarea(EstadoTarea.COMPLETADA, 100, LocalDate.now().plusDays(1), List.of(2L));
+        tareaCompletadaProyecto10.setProyectoId(10L);
+        Tarea tareaProyecto20 = tarea(EstadoTarea.PENDIENTE, 0, LocalDate.now().plusDays(1), List.of());
+        tareaProyecto20.setProyectoId(20L);
+
+        when(tareaRepository.findAll()).thenReturn(List.of(tareaProyecto10, tareaCompletadaProyecto10, tareaProyecto20));
+
+        List<TareaKpiPorProyectoDTO> reportes = tareaService.obtenerKpisPorProyecto();
+
+        assertThat(reportes).hasSize(2);
+        assertThat(reportes.get(0).getProyectoId()).isEqualTo(10L);
+        assertThat(reportes.get(0).getTotalTareas()).isEqualTo(2);
+        assertThat(reportes.get(0).getTareasCompletadas()).isEqualTo(1);
+        assertThat(reportes.get(0).getAvancePromedio()).isEqualTo(75.0);
+        assertThat(reportes.get(1).getProyectoId()).isEqualTo(20L);
+        assertThat(reportes.get(1).getTareasSinResponsable()).isEqualTo(1);
+        verify(tareaRepository).findAll();
+    }
+
+    @Test
+    void obtenerKpisPorResponsableCuentaLaMismaTareaParaCadaResponsableAsignado() {
+        Tarea tareaCompartida = tarea(EstadoTarea.EN_PROGRESO, 50, LocalDate.now().plusDays(1), List.of(1L, 2L));
+        Tarea tareaSoloResponsable1 = tarea(EstadoTarea.COMPLETADA, 100, LocalDate.now().plusDays(1), List.of(1L));
+        Tarea tareaSinResponsable = tarea(EstadoTarea.PENDIENTE, 0, LocalDate.now().plusDays(1), List.of());
+
+        when(tareaRepository.findAll()).thenReturn(List.of(tareaCompartida, tareaSoloResponsable1, tareaSinResponsable));
+
+        List<TareaKpiPorResponsableDTO> reportes = tareaService.obtenerKpisPorResponsable();
+
+        assertThat(reportes).hasSize(2);
+        assertThat(reportes.get(0).getResponsableId()).isEqualTo(1L);
+        assertThat(reportes.get(0).getTotalTareas()).isEqualTo(2);
+        assertThat(reportes.get(0).getTareasCompletadas()).isEqualTo(1);
+        assertThat(reportes.get(0).getAvancePromedio()).isEqualTo(75.0);
+        assertThat(reportes.get(1).getResponsableId()).isEqualTo(2L);
+        assertThat(reportes.get(1).getTotalTareas()).isEqualTo(1);
+        assertThat(reportes.get(1).getTareasEnProgreso()).isEqualTo(1);
+        verify(tareaRepository).findAll();
     }
 
     private Tarea tarea(EstadoTarea estado, int avance, LocalDate fechaFin, List<Long> responsableIds) {
