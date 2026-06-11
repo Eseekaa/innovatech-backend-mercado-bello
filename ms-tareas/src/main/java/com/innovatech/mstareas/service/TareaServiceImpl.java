@@ -134,14 +134,32 @@ public class TareaServiceImpl implements TareaService {
     }
 
     private void aplicarReglasDeAvance(Tarea tarea) {
-        // Si llega a 100%, la tarea queda completada.
-        if (tarea.getAvance() != null && tarea.getAvance() == 100) {
-            tarea.setEstado(EstadoTarea.COMPLETADA);
-        }
-
-        // Si esta completada manualmente, su avance debe ser 100%.
+        // Regla principal: una tarea completada siempre representa 100% real.
         if (tarea.getEstado() == EstadoTarea.COMPLETADA) {
             tarea.setAvance(100);
+            return;
+        }
+
+        // Una tarea bloqueada tiene un impedimento, por lo tanto no debe
+        // contarse como terminada aunque antes haya estado al 100%.
+        if (tarea.getEstado() == EstadoTarea.BLOQUEADA) {
+            if (tarea.getAvance() != null && tarea.getAvance() >= 100) {
+                tarea.setAvance(99);
+            }
+            return;
+        }
+
+        // Si llega a 100% y no esta bloqueada, el sistema la marca completada.
+        if (tarea.getAvance() != null && tarea.getAvance() == 100) {
+            tarea.setEstado(EstadoTarea.COMPLETADA);
+            return;
+        }
+
+        // Si una tarea pendiente ya tiene avance, pasa automaticamente a progreso.
+        if (tarea.getEstado() == EstadoTarea.PENDIENTE
+                && tarea.getAvance() != null
+                && tarea.getAvance() > 0) {
+            tarea.setEstado(EstadoTarea.EN_PROGRESO);
         }
     }
 
