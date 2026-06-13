@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 // Controller REST: expone los endpoints que usaran el BFF y el API Gateway.
@@ -102,6 +103,20 @@ public class TareaController {
                                                   @Valid @RequestBody ActualizarEstadoTareaRequest request) {
         try {
             return ResponseEntity.ok(tareaService.actualizarEstado(id, request));
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // PATCH /api/tareas/{id}/visto-bueno?vistoBueno=true
+    // Marca una tarea completada como aprobada formalmente por jefatura/admin.
+    @PatchMapping("/{id}/visto-bueno")
+    public ResponseEntity<Tarea> cambiarVistoBueno(@PathVariable Long id,
+                                                   @RequestParam boolean vistoBueno) {
+        try {
+            return ResponseEntity.ok(tareaService.cambiarVistoBueno(id, vistoBueno));
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (RuntimeException e) {

@@ -7,6 +7,8 @@ public class TareaKpiDTO {
     private int tareasPendientes;
     private int tareasEnProgreso;
     private int tareasCompletadas;
+    private int tareasAprobadas;
+    private int tareasPendientesAprobacion;
     private int tareasBloqueadas;
     private int tareasVencidas;
     private int tareasSinResponsable;
@@ -21,6 +23,10 @@ public class TareaKpiDTO {
     public void setTareasEnProgreso(int tareasEnProgreso) { this.tareasEnProgreso = tareasEnProgreso; }
     public int getTareasCompletadas() { return tareasCompletadas; }
     public void setTareasCompletadas(int tareasCompletadas) { this.tareasCompletadas = tareasCompletadas; }
+    public int getTareasAprobadas() { return tareasAprobadas; }
+    public void setTareasAprobadas(int tareasAprobadas) { this.tareasAprobadas = tareasAprobadas; }
+    public int getTareasPendientesAprobacion() { return tareasPendientesAprobacion; }
+    public void setTareasPendientesAprobacion(int tareasPendientesAprobacion) { this.tareasPendientesAprobacion = tareasPendientesAprobacion; }
     public int getTareasBloqueadas() { return tareasBloqueadas; }
     public void setTareasBloqueadas(int tareasBloqueadas) { this.tareasBloqueadas = tareasBloqueadas; }
     public int getTareasVencidas() { return tareasVencidas; }

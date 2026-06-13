@@ -242,6 +242,22 @@ public class BffServiceImpl implements BffService {
     }
 
     @Override
+    public TareaDTO cambiarVistoBuenoTarea(Long id, boolean vistoBueno) {
+        // Flujo de cierre: el BFF conserva la tarea completa y solo cambia
+        // la marca de visto bueno. Asi React no necesita reenviar todos los campos.
+        TareaDTO tarea = restTemplate.getForObject(msTareasUrl + "/" + id, TareaDTO.class);
+        if (tarea == null) {
+            throw new RuntimeException("Tarea no encontrada: " + id);
+        }
+        if (vistoBueno && !"COMPLETADA".equals(tarea.getEstado())) {
+            throw new IllegalArgumentException("Solo se puede dar visto bueno a tareas completadas");
+        }
+        tarea.setVistoBueno(vistoBueno);
+        restTemplate.put(msTareasUrl + "/" + id, tarea);
+        return restTemplate.getForObject(msTareasUrl + "/" + id, TareaDTO.class);
+    }
+
+    @Override
     public void eliminarTarea(Long id) {
         restTemplate.delete(msTareasUrl + "/" + id);
     }

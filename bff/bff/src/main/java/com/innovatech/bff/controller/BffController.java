@@ -169,6 +169,15 @@ public class BffController {
         return ResponseEntity.ok(bffService.actualizarEstadoTarea(id, dto));
     }
 
+    // PATCH /api/bff/tareas/{id}/visto-bueno?vistoBueno=true
+    // Valida formalmente una tarea terminada. Esto permite separar:
+    // 1) trabajo completado por el equipo, y 2) aprobacion final del jefe/admin.
+    @PatchMapping("/tareas/{id}/visto-bueno")
+    public ResponseEntity<TareaDTO> cambiarVistoBuenoTarea(@PathVariable Long id,
+                                                           @RequestParam boolean vistoBueno) {
+        return ResponseEntity.ok(bffService.cambiarVistoBuenoTarea(id, vistoBueno));
+    }
+
     // DELETE /api/bff/tareas/{id} - elimina una tarea.
     @DeleteMapping("/tareas/{id}")
     public ResponseEntity<Void> eliminarTarea(@PathVariable Long id) {

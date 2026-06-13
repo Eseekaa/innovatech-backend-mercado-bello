@@ -37,5 +37,6 @@ public interface BffService {
     TareaDTO crearTarea(TareaDTO tareaDTO);
     TareaDTO actualizarTarea(Long id, TareaDTO tareaDTO);
     TareaDTO actualizarEstadoTarea(Long id, ActualizarEstadoTareaDTO dto);
+    TareaDTO cambiarVistoBuenoTarea(Long id, boolean vistoBueno);
     void eliminarTarea(Long id);
 }

@@ -67,6 +67,11 @@ public class Tarea {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
+    // Visto bueno del jefe/admin. Se separa del estado porque una tarea puede
+    // estar COMPLETADA por el equipo, pero pendiente de validacion formal.
+    @Column(name = "visto_bueno", nullable = false)
+    private Boolean vistoBueno = false;
+
     // Lista de IDs de recursos responsables. Los datos completos viven en ms-recursos.
     @ElementCollection
     @CollectionTable(name = "tarea_responsables", joinColumns = @JoinColumn(name = "tarea_id"))
@@ -91,6 +96,8 @@ public class Tarea {
     public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
     public LocalDate getFechaFin() { return fechaFin; }
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+    public Boolean getVistoBueno() { return vistoBueno; }
+    public void setVistoBueno(Boolean vistoBueno) { this.vistoBueno = vistoBueno; }
     public List<Long> getResponsableIds() { return responsableIds; }
     public void setResponsableIds(List<Long> responsableIds) {
         this.responsableIds = responsableIds != null ? responsableIds : new ArrayList<>();

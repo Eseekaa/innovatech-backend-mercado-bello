@@ -15,6 +15,7 @@ public class TareaDTO {
     private String prioridad;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
+    private Boolean vistoBueno;
     private List<Long> responsableIds;
 
     public Long getId() { return id; }
@@ -35,6 +36,8 @@ public class TareaDTO {
     public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
     public LocalDate getFechaFin() { return fechaFin; }
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+    public Boolean getVistoBueno() { return vistoBueno; }
+    public void setVistoBueno(Boolean vistoBueno) { this.vistoBueno = vistoBueno; }
     public List<Long> getResponsableIds() { return responsableIds; }
     public void setResponsableIds(List<Long> responsableIds) { this.responsableIds = responsableIds; }
 }

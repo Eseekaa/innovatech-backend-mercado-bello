@@ -20,5 +20,6 @@ public interface TareaService {
     Tarea crear(Tarea tarea);
     Tarea actualizar(Long id, Tarea tareaActualizada);
     Tarea actualizarEstado(Long id, ActualizarEstadoTareaRequest request);
+    Tarea cambiarVistoBueno(Long id, boolean vistoBueno);
     void eliminar(Long id);
 }

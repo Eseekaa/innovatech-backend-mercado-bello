@@ -1,6 +1,7 @@
 package com.innovatech.mstareas.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,25 +38,32 @@ class TareaServiceImplTest {
         LocalDate ayer = LocalDate.now().minusDays(1);
         LocalDate manana = LocalDate.now().plusDays(1);
 
+        Tarea tareaCompletadaAprobada = tarea(EstadoTarea.COMPLETADA, 100, ayer, List.of(2L));
+        tareaCompletadaAprobada.setVistoBueno(true);
+        Tarea tareaCompletadaPendienteAprobacion = tarea(EstadoTarea.COMPLETADA, 100, manana, List.of(3L));
+
         List<Tarea> tareas = List.of(
                 tarea(EstadoTarea.PENDIENTE, 0, ayer, List.of()),
                 tarea(EstadoTarea.EN_PROGRESO, 50, manana, List.of(1L)),
-                tarea(EstadoTarea.COMPLETADA, 100, ayer, List.of(2L)),
+                tareaCompletadaAprobada,
+                tareaCompletadaPendienteAprobacion,
                 tarea(EstadoTarea.BLOQUEADA, 25, manana, List.of())
         );
         when(tareaRepository.findAll()).thenReturn(tareas);
 
         TareaKpiDTO kpis = tareaService.obtenerKpis();
 
-        assertThat(kpis.getTotalTareas()).isEqualTo(4);
+        assertThat(kpis.getTotalTareas()).isEqualTo(5);
         assertThat(kpis.getTareasPendientes()).isEqualTo(1);
         assertThat(kpis.getTareasEnProgreso()).isEqualTo(1);
-        assertThat(kpis.getTareasCompletadas()).isEqualTo(1);
+        assertThat(kpis.getTareasCompletadas()).isEqualTo(2);
+        assertThat(kpis.getTareasAprobadas()).isEqualTo(1);
+        assertThat(kpis.getTareasPendientesAprobacion()).isEqualTo(1);
         assertThat(kpis.getTareasBloqueadas()).isEqualTo(1);
         assertThat(kpis.getTareasVencidas()).isEqualTo(1);
         assertThat(kpis.getTareasSinResponsable()).isEqualTo(2);
-        assertThat(kpis.getAvancePromedio()).isEqualTo(43.75);
-        assertThat(kpis.getPorcentajeCompletadas()).isEqualTo(25.0);
+        assertThat(kpis.getAvancePromedio()).isEqualTo(55.0);
+        assertThat(kpis.getPorcentajeCompletadas()).isEqualTo(40.0);
         verify(tareaRepository).findAll();
     }
 
@@ -90,6 +98,33 @@ class TareaServiceImplTest {
         assertThat(actualizada.getAvance()).isEqualTo(99);
         verify(tareaRepository).findById(1L);
         verify(tareaRepository).save(tareaExistente);
+    }
+
+    @Test
+    void cambiarVistoBuenoSoloPermiteAprobarTareasCompletadas() {
+        Tarea tareaCompletada = tarea(EstadoTarea.COMPLETADA, 100, LocalDate.now().plusDays(1), List.of(1L));
+
+        when(tareaRepository.findById(1L)).thenReturn(Optional.of(tareaCompletada));
+        when(tareaRepository.save(any(Tarea.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Tarea aprobada = tareaService.cambiarVistoBueno(1L, true);
+
+        assertThat(aprobada.getVistoBueno()).isTrue();
+        verify(tareaRepository).findById(1L);
+        verify(tareaRepository).save(tareaCompletada);
+    }
+
+    @Test
+    void cambiarVistoBuenoRechazaTareasNoCompletadas() {
+        Tarea tareaEnProgreso = tarea(EstadoTarea.EN_PROGRESO, 50, LocalDate.now().plusDays(1), List.of(1L));
+
+        when(tareaRepository.findById(1L)).thenReturn(Optional.of(tareaEnProgreso));
+
+        assertThatThrownBy(() -> tareaService.cambiarVistoBueno(1L, true))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Solo se puede dar visto bueno");
+
+        verify(tareaRepository).findById(1L);
     }
 
     @Test

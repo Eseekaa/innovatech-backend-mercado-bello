@@ -97,6 +97,8 @@ public class TareaServiceImpl implements TareaService {
         kpis.setTareasPendientes(contarPorEstado(tareas, EstadoTarea.PENDIENTE));
         kpis.setTareasEnProgreso(contarPorEstado(tareas, EstadoTarea.EN_PROGRESO));
         kpis.setTareasCompletadas(contarPorEstado(tareas, EstadoTarea.COMPLETADA));
+        kpis.setTareasAprobadas(contarTareasAprobadas(tareas));
+        kpis.setTareasPendientesAprobacion(contarTareasPendientesAprobacion(tareas));
         kpis.setTareasBloqueadas(contarPorEstado(tareas, EstadoTarea.BLOQUEADA));
         kpis.setTareasVencidas(contarTareasVencidas(tareas));
         kpis.setTareasSinResponsable(contarTareasSinResponsable(tareas));
@@ -114,6 +116,8 @@ public class TareaServiceImpl implements TareaService {
         reporte.setTareasPendientes(base.getTareasPendientes());
         reporte.setTareasEnProgreso(base.getTareasEnProgreso());
         reporte.setTareasCompletadas(base.getTareasCompletadas());
+        reporte.setTareasAprobadas(base.getTareasAprobadas());
+        reporte.setTareasPendientesAprobacion(base.getTareasPendientesAprobacion());
         reporte.setTareasBloqueadas(base.getTareasBloqueadas());
         reporte.setTareasVencidas(base.getTareasVencidas());
         reporte.setTareasSinResponsable(base.getTareasSinResponsable());
@@ -130,6 +134,8 @@ public class TareaServiceImpl implements TareaService {
         reporte.setTareasPendientes(base.getTareasPendientes());
         reporte.setTareasEnProgreso(base.getTareasEnProgreso());
         reporte.setTareasCompletadas(base.getTareasCompletadas());
+        reporte.setTareasAprobadas(base.getTareasAprobadas());
+        reporte.setTareasPendientesAprobacion(base.getTareasPendientesAprobacion());
         reporte.setTareasBloqueadas(base.getTareasBloqueadas());
         reporte.setTareasVencidas(base.getTareasVencidas());
         reporte.setAvancePromedio(base.getAvancePromedio());
@@ -156,6 +162,9 @@ public class TareaServiceImpl implements TareaService {
         existente.setPrioridad(tareaActualizada.getPrioridad());
         existente.setFechaInicio(tareaActualizada.getFechaInicio());
         existente.setFechaFin(tareaActualizada.getFechaFin());
+        if (tareaActualizada.getVistoBueno() != null) {
+            existente.setVistoBueno(tareaActualizada.getVistoBueno());
+        }
         existente.setResponsableIds(tareaActualizada.getResponsableIds());
 
         prepararTarea(existente);
@@ -171,6 +180,21 @@ public class TareaServiceImpl implements TareaService {
         existente.setAvance(request.getAvance());
         aplicarReglasDeAvance(existente);
 
+        return tareaRepository.save(existente);
+    }
+
+    @Override
+    public Tarea cambiarVistoBueno(Long id, boolean vistoBueno) {
+        Tarea existente = tareaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarea no encontrada: " + id));
+
+        // Regla de negocio: el visto bueno representa aceptacion final del
+        // trabajo, por eso solo puede activarse si la tarea ya esta completada.
+        if (vistoBueno && existente.getEstado() != EstadoTarea.COMPLETADA) {
+            throw new IllegalArgumentException("Solo se puede dar visto bueno a tareas completadas");
+        }
+
+        existente.setVistoBueno(vistoBueno);
         return tareaRepository.save(existente);
     }
 
@@ -193,6 +217,9 @@ public class TareaServiceImpl implements TareaService {
         if (tarea.getResponsableIds() == null) {
             tarea.setResponsableIds(new ArrayList<>());
         }
+        if (tarea.getVistoBueno() == null) {
+            tarea.setVistoBueno(false);
+        }
 
         validarFechas(tarea);
         aplicarReglasDeAvance(tarea);
@@ -213,6 +240,9 @@ public class TareaServiceImpl implements TareaService {
             tarea.setAvance(100);
             return;
         }
+
+        // Si la tarea deja de estar completada, el visto bueno deja de ser valido.
+        tarea.setVistoBueno(false);
 
         // Una tarea bloqueada tiene un impedimento, por lo tanto no debe
         // contarse como terminada aunque antes haya estado al 100%.
@@ -255,6 +285,20 @@ public class TareaServiceImpl implements TareaService {
     private int contarTareasSinResponsable(List<Tarea> tareas) {
         return (int) tareas.stream()
                 .filter(tarea -> tarea.getResponsableIds() == null || tarea.getResponsableIds().isEmpty())
+                .count();
+    }
+
+    private int contarTareasAprobadas(List<Tarea> tareas) {
+        return (int) tareas.stream()
+                .filter(tarea -> tarea.getEstado() == EstadoTarea.COMPLETADA)
+                .filter(tarea -> Boolean.TRUE.equals(tarea.getVistoBueno()))
+                .count();
+    }
+
+    private int contarTareasPendientesAprobacion(List<Tarea> tareas) {
+        return (int) tareas.stream()
+                .filter(tarea -> tarea.getEstado() == EstadoTarea.COMPLETADA)
+                .filter(tarea -> !Boolean.TRUE.equals(tarea.getVistoBueno()))
                 .count();
     }
 

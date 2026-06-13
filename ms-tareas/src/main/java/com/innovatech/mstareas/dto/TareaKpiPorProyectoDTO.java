@@ -9,6 +9,8 @@ public class TareaKpiPorProyectoDTO {
     private int tareasPendientes;
     private int tareasEnProgreso;
     private int tareasCompletadas;
+    private int tareasAprobadas;
+    private int tareasPendientesAprobacion;
     private int tareasBloqueadas;
     private int tareasVencidas;
     private int tareasSinResponsable;
@@ -53,6 +55,22 @@ public class TareaKpiPorProyectoDTO {
 
     public void setTareasCompletadas(int tareasCompletadas) {
         this.tareasCompletadas = tareasCompletadas;
+    }
+
+    public int getTareasAprobadas() {
+        return tareasAprobadas;
+    }
+
+    public void setTareasAprobadas(int tareasAprobadas) {
+        this.tareasAprobadas = tareasAprobadas;
+    }
+
+    public int getTareasPendientesAprobacion() {
+        return tareasPendientesAprobacion;
+    }
+
+    public void setTareasPendientesAprobacion(int tareasPendientesAprobacion) {
+        this.tareasPendientesAprobacion = tareasPendientesAprobacion;
     }
 
     public int getTareasBloqueadas() {
