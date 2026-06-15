@@ -2,7 +2,7 @@
 
 Backend de la Plataforma Inteligente de Gestion de Proyectos y Recursos Humanos para Innovatech Solutions.
 
-El sistema esta construido con arquitectura de microservicios en Spring Boot. Incluye autenticacion con JWT, gestion de proyectos, gestion de recursos humanos, BFF para el frontend, API Gateway y soporte para Docker.
+El sistema esta construido con arquitectura de microservicios en Spring Boot. Incluye autenticacion con JWT, gestion de proyectos, gestion de recursos humanos, gestion de tareas, BFF para el frontend, API Gateway, pruebas unitarias, cobertura JaCoCo y soporte para Docker.
 
 ## Integrantes
 
@@ -37,7 +37,7 @@ API Gateway :8085
 | ms-auth | 8083 | Registro, login, roles, BCrypt y JWT |
 | ms-proyectos | 8081 | CRUD de proyectos y visto bueno |
 | ms-recursos | 8082 | CRUD de empleados y asignacion a proyectos |
-| ms-tareas | 8086 | CRUD de tareas, asignacion de responsables y KPIs |
+| ms-tareas | 8086 | CRUD de tareas, asignacion de responsables, avance, visto bueno y KPIs |
 
 ## Funcionalidades principales
 
@@ -49,6 +49,10 @@ API Gateway :8085
 - CRUD de proyectos.
 - CRUD de recursos humanos.
 - Asignacion de uno o mas proyectos a cada recurso.
+- CRUD de tareas por proyecto.
+- Asignacion de uno o mas responsables a cada tarea.
+- Control de estado, prioridad, avance y visto bueno de cierre en tareas.
+- KPIs de tareas por estado, proyecto y responsable.
 - Visto bueno de proyectos, con opcion para aprobar o quitar aprobacion.
 - Dashboard combinado desde el BFF.
 - API Gateway para exponer los servicios de forma centralizada.
@@ -58,9 +62,9 @@ API Gateway :8085
 
 | Rol | Permisos |
 | --- | --- |
-| USUARIO | Visualiza informacion y puede dar o quitar visto bueno a proyectos |
-| JEFE_PROYECTO | Hereda permisos de USUARIO, crea/edita proyectos, crea/edita recursos y asigna empleados a proyectos |
-| ADMIN | Hereda permisos anteriores y ademas puede eliminar proyectos y recursos |
+| USUARIO | Visualiza informacion y puede consultar proyectos, recursos y tareas |
+| JEFE_PROYECTO | Hereda permisos de USUARIO, crea/edita proyectos, recursos y tareas, asigna responsables y gestiona avance |
+| ADMIN | Hereda permisos anteriores y ademas puede eliminar proyectos, recursos y tareas |
 
 Los roles especiales se pueden asignar desde la base de datos H2 de `ms-auth`.
 
@@ -74,6 +78,7 @@ Los roles especiales se pueden asignar desde la base de datos H2 de `ms-auth`.
 - Spring Data JPA
 - H2 Database
 - Maven
+- JaCoCo
 - Docker y Docker Compose
 
 ## Ejecucion recomendada con Docker
@@ -84,16 +89,16 @@ Los repositorios deben quedar en la misma carpeta padre:
 
 ```text
 innovatech
-├── innovatech-backend-mercado-bello
-└── innovatech-frontend-mercado-bello
-    └── innovatech-frontend
+|-- innovatech-backend-mercado-bello
+`-- innovatech-frontend-mercado-bello
+    `-- innovatech-frontend
 ```
 
 Comando:
 
 ```powershell
 cd C:\Users\%USERNAME%\innovatech\innovatech-backend-mercado-bello
-docker compose up --build
+docker compose up -d --build
 ```
 
 Luego abrir:
@@ -102,13 +107,13 @@ Luego abrir:
 http://localhost:3000
 ```
 
-Para detener:
+Para verificar los contenedores:
 
-```text
-Ctrl + C
+```powershell
+docker compose ps
 ```
 
-Despues:
+Para detener:
 
 ```powershell
 docker compose down
@@ -148,9 +153,9 @@ cd api-gateway
 .\mvnw.cmd spring-boot:run
 ```
 
-## Ejecución de Pruebas Unitarias y Cobertura (JaCoCo)
+## Ejecucion de Pruebas Unitarias y Cobertura (JaCoCo)
 
-Para compilar, ejecutar las pruebas unitarias y verificar el reporte de cobertura mínimo del 60% exigido por la pauta, ubícate en la carpeta correspondiente de cada módulo y ejecuta el siguiente comando:
+Para compilar, ejecutar las pruebas unitarias y verificar el reporte de cobertura minimo del 60% exigido por la pauta, ubicate en la carpeta correspondiente de cada modulo y ejecuta el siguiente comando:
 
 ```powershell
 # API Gateway
@@ -173,21 +178,36 @@ cd ms-proyectos\ms-proyectos
 cd ms-recursos\ms-recursos
 .\mvnw.cmd clean verify
 
-# MS Tareas (usa el wrapper de gateway)
+# MS Tareas
 cd ms-tareas
 ..\api-gateway\mvnw.cmd clean verify
 ```
 
-### Ubicación de los Reportes de Cobertura JaCoCo
+### Ubicacion de los Reportes de Cobertura JaCoCo
 
-Una vez ejecutado el comando `verify`, los reportes interactivos en HTML se generarán en las siguientes rutas relativas:
+Una vez ejecutado el comando `verify`, los reportes interactivos en HTML se generan en las siguientes rutas relativas:
 
-* **API Gateway:** `api-gateway\target\site\jacoco\index.html`
-* **BFF (Backend For Frontend):** `bff\bff\target\site\jacoco\index.html`
-* **MS Auth:** `ms-auth\ms-auth\target\site\jacoco\index.html`
-* **MS Proyectos:** `ms-proyectos\ms-proyectos\target\site\jacoco\index.html`
-* **MS Recursos:** `ms-recursos\ms-recursos\target\site\jacoco\index.html`
-* **MS Tareas:** `ms-tareas\target\site\jacoco\index.html`
+- **API Gateway:** `api-gateway\target\site\jacoco\index.html`
+- **BFF (Backend For Frontend):** `bff\bff\target\site\jacoco\index.html`
+- **MS Auth:** `ms-auth\ms-auth\target\site\jacoco\index.html`
+- **MS Proyectos:** `ms-proyectos\ms-proyectos\target\site\jacoco\index.html`
+- **MS Recursos:** `ms-recursos\ms-recursos\target\site\jacoco\index.html`
+- **MS Tareas:** `ms-tareas\target\site\jacoco\index.html`
+
+## Cobertura validada
+
+Los componentes backend superan el minimo de 60% de cobertura solicitado.
+
+| Componente | Cobertura aproximada |
+| --- | --- |
+| API Gateway | 100% |
+| BFF | 86% |
+| MS Auth | 84% |
+| MS Proyectos | 72% |
+| MS Recursos | 72% |
+| MS Tareas | 69% |
+
+El detalle de ejecucion y resultados se encuentra en `INFORME_EV3_COBERTURA.md`.
 
 ## Endpoints principales
 
@@ -211,6 +231,17 @@ Una vez ejecutado el comando `verify`, los reportes interactivos en HTML se gene
 | POST | `/api/bff/recursos` | Crear recurso |
 | PUT | `/api/bff/recursos/{id}` | Actualizar recurso y proyectos asignados |
 | DELETE | `/api/bff/recursos/{id}` | Eliminar recurso |
+| GET | `/api/bff/tareas` | Listar tareas |
+| GET | `/api/bff/tareas/{id}` | Obtener tarea por id |
+| GET | `/api/bff/tareas/proyecto/{proyectoId}` | Listar tareas por proyecto |
+| GET | `/api/bff/tareas/responsable/{responsableId}` | Listar tareas por responsable |
+| POST | `/api/bff/tareas` | Crear tarea |
+| PUT | `/api/bff/tareas/{id}` | Actualizar tarea |
+| PATCH | `/api/bff/tareas/{id}/estado` | Cambiar estado y avance |
+| DELETE | `/api/bff/tareas/{id}` | Eliminar tarea |
+| GET | `/api/bff/tareas/kpis` | KPIs generales de tareas |
+| GET | `/api/bff/tareas/kpis/proyectos` | KPIs de tareas por proyecto |
+| GET | `/api/bff/tareas/kpis/responsables` | KPIs de tareas por responsable |
 
 ## Consolas H2
 
@@ -219,6 +250,7 @@ Una vez ejecutado el comando `verify`, los reportes interactivos en HTML se gene
 | Auth | `http://localhost:8083/h2-console` | `jdbc:h2:mem:authdb` |
 | Proyectos | `http://localhost:8081/h2-console` | `jdbc:h2:mem:proyectosdb` |
 | Recursos | `http://localhost:8082/h2-console` | `jdbc:h2:mem:recursosdb` |
+| Tareas | `http://localhost:8086/h2-console` | `jdbc:h2:mem:tareasdb` |
 
 Credenciales:
 
@@ -234,6 +266,7 @@ SELECT ID, USERNAME, EMAIL, ROL, PASSWORD FROM USUARIOS;
 SELECT * FROM PROYECTOS;
 SELECT * FROM RECURSOS;
 SELECT * FROM RECURSO_PROYECTOS;
+SELECT * FROM TAREAS;
 ```
 
 Asignar roles:
@@ -248,10 +281,19 @@ UPDATE USUARIOS SET ROL = 'USUARIO' WHERE USERNAME = 'usuario1';
 
 Las bases de datos H2 estan en memoria. Si se apagan los servicios o se ejecuta `docker compose down`, los datos creados durante la prueba se borran. El codigo del proyecto no se borra.
 
+## Documentacion EV3
+
+- `ARQUITECTURA_EV3.md`: arquitectura de microservicios para tareas y KPIs.
+- `INFORME_EV3_COBERTURA.md`: resumen de pruebas unitarias, cobertura JaCoCo y resultados.
+- `DOCKER.md`: guia de ejecucion con Docker.
+- `GUIA_PRESENTACION.md`: apoyo para la defensa del proyecto.
+
 ## Branching
 
 Se uso GitHub Flow:
 
 - `main`: version estable.
-- `feature/backend-matias-mercado`: desarrollo del backend.
-- `feature/frontend-matias-bello`: desarrollo del frontend.
+- `feature/backend-matias-mercado`: desarrollo inicial del backend.
+- `feature/frontend-matias-bello`: desarrollo inicial del frontend.
+- `feature/backend-ev3-tareas-kpi`: desarrollo EV3 de tareas, KPIs, integracion y cobertura.
+- `feature/backend-ev3-testing-matias-bello`: pruebas, JaCoCo y documentacion de cobertura.
