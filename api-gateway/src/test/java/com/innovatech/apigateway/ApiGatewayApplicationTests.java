@@ -10,4 +10,9 @@ class ApiGatewayApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void mainMethodRuns() {
+		ApiGatewayApplication.main(new String[]{"--server.port=0"});
+	}
+
 }
