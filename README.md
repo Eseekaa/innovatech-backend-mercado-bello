@@ -20,10 +20,12 @@ API Gateway :8085
     +--> MS Auth      :8083
     +--> MS Proyectos :8081
     +--> MS Recursos  :8082
+    +--> MS Tareas    :8086
     +--> BFF          :8084
               |
               +--> MS Proyectos
               +--> MS Recursos
+              +--> MS Tareas
 ```
 
 ## Microservicios
@@ -31,10 +33,11 @@ API Gateway :8085
 | Servicio | Puerto | Responsabilidad |
 | --- | --- | --- |
 | api-gateway | 8085 | Puerta de entrada para enrutar peticiones a los servicios |
-| bff | 8084 | Une informacion de proyectos y recursos para el frontend |
+| bff | 8084 | Une informacion de proyectos, recursos y tareas para el frontend |
 | ms-auth | 8083 | Registro, login, roles, BCrypt y JWT |
 | ms-proyectos | 8081 | CRUD de proyectos y visto bueno |
 | ms-recursos | 8082 | CRUD de empleados y asignacion a proyectos |
+| ms-tareas | 8086 | CRUD de tareas, asignacion de responsables y KPIs |
 
 ## Funcionalidades principales
 
@@ -116,29 +119,75 @@ docker compose down
 Abrir una terminal por cada servicio.
 
 ```powershell
-cd C:\Users\Eseekaa\innovatech\innovatech-backend-mercado-bello\ms-auth\ms-auth
-mvn spring-boot:run
+cd ms-auth\ms-auth
+.\mvnw.cmd spring-boot:run
 ```
 
 ```powershell
-cd C:\Users\Eseekaa\innovatech\innovatech-backend-mercado-bello\ms-proyectos\ms-proyectos
-mvn spring-boot:run
+cd ms-proyectos\ms-proyectos
+.\mvnw.cmd spring-boot:run
 ```
 
 ```powershell
-cd C:\Users\Eseekaa\innovatech\innovatech-backend-mercado-bello\ms-recursos\ms-recursos
-mvn spring-boot:run
+cd ms-recursos\ms-recursos
+.\mvnw.cmd spring-boot:run
 ```
 
 ```powershell
-cd C:\Users\Eseekaa\innovatech\innovatech-backend-mercado-bello\bff\bff
-mvn spring-boot:run
+cd ms-tareas
+..\api-gateway\mvnw.cmd spring-boot:run
 ```
 
 ```powershell
-cd C:\Users\Eseekaa\innovatech\innovatech-backend-mercado-bello\api-gateway
-mvn spring-boot:run
+cd bff\bff
+.\mvnw.cmd spring-boot:run
 ```
+
+```powershell
+cd api-gateway
+.\mvnw.cmd spring-boot:run
+```
+
+## Ejecución de Pruebas Unitarias y Cobertura (JaCoCo)
+
+Para compilar, ejecutar las pruebas unitarias y verificar el reporte de cobertura mínimo del 60% exigido por la pauta, ubícate en la carpeta correspondiente de cada módulo y ejecuta el siguiente comando:
+
+```powershell
+# API Gateway
+cd api-gateway
+.\mvnw.cmd clean verify
+
+# BFF
+cd bff\bff
+.\mvnw.cmd clean verify
+
+# MS Auth
+cd ms-auth\ms-auth
+.\mvnw.cmd clean verify
+
+# MS Proyectos
+cd ms-proyectos\ms-proyectos
+.\mvnw.cmd clean verify
+
+# MS Recursos
+cd ms-recursos\ms-recursos
+.\mvnw.cmd clean verify
+
+# MS Tareas (usa el wrapper de gateway)
+cd ms-tareas
+..\api-gateway\mvnw.cmd clean verify
+```
+
+### Ubicación de los Reportes de Cobertura JaCoCo
+
+Una vez ejecutado el comando `verify`, los reportes interactivos en HTML se generarán en las siguientes rutas relativas:
+
+* **API Gateway:** `api-gateway\target\site\jacoco\index.html`
+* **BFF (Backend For Frontend):** `bff\bff\target\site\jacoco\index.html`
+* **MS Auth:** `ms-auth\ms-auth\target\site\jacoco\index.html`
+* **MS Proyectos:** `ms-proyectos\ms-proyectos\target\site\jacoco\index.html`
+* **MS Recursos:** `ms-recursos\ms-recursos\target\site\jacoco\index.html`
+* **MS Tareas:** `ms-tareas\target\site\jacoco\index.html`
 
 ## Endpoints principales
 
