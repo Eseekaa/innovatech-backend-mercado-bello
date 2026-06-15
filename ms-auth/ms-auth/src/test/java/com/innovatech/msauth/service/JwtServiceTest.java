@@ -35,8 +35,10 @@ class JwtServiceTest {
     @Test
     void isTokenValidDebeRechazarTokenManipulado() {
         String token = jwtService.generateToken("usuario1", "USUARIO");
-        char reemplazo = token.charAt(token.length() - 1) == 'a' ? 'b' : 'a';
-        String tokenManipulado = token.substring(0, token.length() - 1) + reemplazo;
+        String[] partes = token.split("\\.");
+        char reemplazo = partes[2].charAt(0) == 'a' ? 'b' : 'a';
+        partes[2] = reemplazo + partes[2].substring(1);
+        String tokenManipulado = String.join(".", partes);
 
         assertFalse(jwtService.isTokenValid(tokenManipulado));
     }
